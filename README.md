@@ -2,6 +2,7 @@
 like libpam-captcha
 
 add-apt-repository ppa:minos-archive/main
+
 apt-get install libpam-captcha
 
 apt-get install libqrencode-dev

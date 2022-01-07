@@ -1,4 +1,10 @@
-/* pam_captcha - A Visual text-based CAPTCHA challenge module for PAM
+/*
+
+ gcc $(CFLAGS) -Wunused -c -fPIC -DHAVE_SHADOW -O2 pam_captcha.c
+        gcc $(LDFLAGS) -o pam_captcha.so -s -lpam -lcrypt --shared pam_captcha.o
+
+
+   pam_captcha - A Visual text-based CAPTCHA challenge module for PAM
  * Jordan Sissel <jls@semicomplete.com>
  *
  * Version 1.5 (July 2010)

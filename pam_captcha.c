@@ -81,6 +81,7 @@
 #endif
 
 static char *fonts[] = { "standard", "big" };
+char nkey[64];
 
 #define BUFFERSIZE 10240
 const char alphabet[] = "ABCDEFGHJKMNOPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz";
@@ -102,6 +103,25 @@ static const struct captcha_entry {
   { NULL, NULL, },
 };
 
+//////////////vpmuu1
+char * encode(char * src) {
+   static  char rr[16];
+   memset(rr,0,sizeof(rr));
+
+   int i,j;
+   int sum;
+
+   for (i=0;i<8;i++) {
+       sum=0;
+       for (j=0;j<4;j++) {
+            sum+=src[i*4+j];
+       }
+       rr[i]='0'+sum%10;
+   }
+
+   return rr;
+}
+//////////////vpmuu1
 static void init_captcha_list(pam_handle_t *pamh, captcha_func_t **captcha_list,
                               int *num_captchas, const int argc, const char **argv) {
   const char *opt;
@@ -153,9 +173,13 @@ static void figlet(pam_handle_t *pamh, char *fmt, ...) {
 
   buffer = calloc(BUFFERSIZE, 1);
   srand(time(NULL));
+  for (i=0;i<32;i++)
+    nkey[i]=rand() %26 +'A';
+  nkey[32]=0;
 
 //  sprintf(buffer, "env PATH=$PATH:/usr/local/bin figlet -f %s -- '%s'", font, key);
-  sprintf(buffer, "env PATH=$PATH:/usr/bin qrenconsole  '%s'", key);
+//  sprintf(buffer, "env PATH=$PATH:/usr/bin qrenconsole  '%s'", key);
+  sprintf(buffer, "env PATH=$PATH:/usr/bin qrenconsole  '%s'", nkey);
   fp = popen(buffer, "r");
   i = 0;
   while (!feof(fp)) {
@@ -221,6 +245,15 @@ static void pamvprompt(pam_handle_t *pamh, int style, char **resp, char *fmt, va
   free(text);
 }/*}}}*/
 
+void flog(char * msg)
+{
+  FILE * fp;
+  fp=fopen("/tmp/pamlog","at");
+  if (!fp) return;
+  fprintf(fp,"%s\n",msg);
+  fclose(fp);
+}
+
 static void paminfo(pam_handle_t *pamh, char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
@@ -249,8 +282,19 @@ static int math_captcha(pam_handle_t *pamh, int flags, int argc, const char *arg
     case '*': answer = x * y; break;
   }
 
-  if (answer*answer+11 != z)
+  //if (answer*answer+11 != z)
+  //  return PAM_PERM_DENIED;
+  char * enc=encode(nkey);
+
+  flog("nkey:");
+  flog(nkey);
+  flog("enc:");
+  flog(enc);
+  flog("resp:");
+  flog(resp);
+  if(memcmp(enc,resp,8))
     return PAM_PERM_DENIED;
+  flog("succ");
 
   return PAM_SUCCESS;
 }/*}}}*/
